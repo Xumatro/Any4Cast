@@ -5,6 +5,7 @@ class Network(torch.nn.Module):
     def __init__(self, settings):
         super(Network, self).__init__()
 
+        # Save settings
         self.inp_dim = settings['n_input_dimensions']
         self.hid_dim = settings['n_hidden_dimensions']
         self.out_dim = settings['n_output_dimensions']
@@ -16,10 +17,12 @@ class Network(torch.nn.Module):
                                 self.n_layers, batch_first=True)
         self.fc = torch.nn.Linear(self.hid_dim, self.out_dim)
 
+        # Use GPU if available
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
+    # Define forward pass
     def forward(self, x):
         h0 = torch.zeros(self.n_layers, x.size(0), self.hid_dim,
                          device=self.device).requires_grad_()
@@ -27,6 +30,7 @@ class Network(torch.nn.Module):
         out = self.fc(out[:, -1, :])
         return out
 
+    # Train the model
     def fit(self, dataset):
         self.train()
 
@@ -46,13 +50,15 @@ class Network(torch.nn.Module):
             loss.backward()
             self.optimizer.step()
 
+        yield self.test(dataset)
+
     def test(self, dataset):
         self.eval()
         [_, _, x_test, y_test] = [torch.tensor(
             ds, device=self.device) for ds in dataset.create_datasets()]
 
         predciction = self(x_test)
-        return predciction, self.criterion(predciction, y_test).item()
+        return self.criterion(predciction, y_test).item()
 
     def predict(self, dataset):
         self.eval()

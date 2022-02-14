@@ -5,6 +5,7 @@ import numpy as np
 
 class Dataset:
     def __init__(self, settings):
+        # Save settings
         self.f_width = settings['n_features']
         self.s_width = settings['n_skipped']
         self.l_width = settings['n_labels']
@@ -17,6 +18,7 @@ class Dataset:
         self.load_serial(serial_data)
 
     def load_serial(self, serial_data):
+        # Load data and save normalization parameters
         self.serial_data = np.array(serial_data, dtype=np.float32)
 
         self.mu = self.serial_data.mean()
@@ -51,7 +53,10 @@ is not an implemented normalization method!")
         return [denorm_func(prediction) for prediction in predictions]
 
     def create_datasets(self, prediction_mode=False):
+        # Create train and test datasets for training the model
         self.create_windows(prediction_mode)
+
+        # If `prediction_mode` is set, use all data
         if prediction_mode:
             split_point = len(self.features)
         else:
@@ -63,6 +68,7 @@ is not an implemented normalization method!")
         y_test = self.labels[split_point:]
 
         if prediction_mode:
+            # Only return last window
             return np.array([x_train[-1]])
         else:
             return x_train, y_train, x_test, y_test
@@ -80,6 +86,7 @@ is not an implemented normalization method!")
             l_width = self.l_width
             t_width = self.f_width + s_width + l_width
 
+        # Create moving windows
         for i in range(len(self.serial_data) - (t_width - 1)):
             features.append([[feature] for feature in
                              self.serial_data[i:(i + self.f_width)]])
