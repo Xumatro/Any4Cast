@@ -27,9 +27,8 @@ class Network(torch.nn.Module):
         out = self.fc(out[:, -1, :])
         return out
 
-    def fit(self, dataset, quiet=False):
+    def fit(self, dataset):
         self.train()
-        losses = []
 
         [x_train, y_train, _, _] = [torch.tensor(
             ds, device=self.device) for ds in dataset.create_datasets()]
@@ -40,16 +39,12 @@ class Network(torch.nn.Module):
         for i in range(self.n_epochs):
             prediction = self(x_train)
             loss = self.criterion(prediction, y_train)
-            losses.append(loss.item())
 
-            if not quiet:
-                print(f"Epoch: {i + 1},\tMSE: {loss.item()}")
+            yield f"Epoch: {i + 1},\tMSE: {loss.item()}"
 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-
-        return losses
 
     def test(self, dataset):
         self.eval()
