@@ -65,7 +65,7 @@ nn = neural.Network(neural_settings)
 print(" Success!")
 
 print("Training...", end="")
-nn.fit(ds, quiet=False)
+nn.fit(ds)
 print(" Success!")
 
 print("Neural Tests completed!")
